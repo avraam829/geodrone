@@ -1,14 +1,28 @@
 // src/components/Sidebar.jsx
 import React from 'react';
-import '../styles/Sidebar.css'; // Импортируем стили
+import '../styles/Sidebar.css';
 
 const Sidebar = ({ handleStyleChange }) => {
+  const mapStyles = [
+    { label: 'Спутник', value: 'mapbox://styles/mapbox/satellite-streets-v12' },
+    { label: 'Схема', value: 'mapbox://styles/mapbox/streets-v12' },
+    { label: '3D рельеф', value: 'mapbox://styles/mapbox/outdoors-v12' }
+  ];
+
+  const handleSelectChange = (event) => {
+    handleStyleChange(event.target.value);
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar-content">
-        <button onClick={() => handleStyleChange('mapbox://styles/mapbox/satellite-v9')}>Спутник</button>
-        <button onClick={() => handleStyleChange('mapbox://styles/mapbox/streets-v11')}>Схема</button>
-        <button onClick={() => handleStyleChange('mapbox://styles/mapbox/outdoors-v11')}>3D рельеф</button>
+        <select onChange={handleSelectChange} className="map-style-select">
+          {mapStyles.map((style) => (
+            <option key={style.value} value={style.value}>
+              {style.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

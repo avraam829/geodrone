@@ -19,7 +19,7 @@ const Map = ({ mapStyle }) => {
       mapRef.current.setStyle(mapStyle);
     } else {
       mapRef.current = new mapboxgl.Map({
-        container: mapContainerRef.current,
+        container: mapContainerRef.current, 
         style: mapStyle,
         center: [44.621762, 39.091278],
         zoom: 20,
