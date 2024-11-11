@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.1.0",
     "@tweenjs/tween.js": "^25.0.0",
     "babylon": "^6.18.0",
     "babylonjs": "^7.30.0",
     "babylonjs-loaders": "^7.30.0",
+    "chart.js": "^4.4.6",
     "deck": "^0.0.4",
     "deck.gl": "^9.0.33",
     "file-saver": "^2.0.5",

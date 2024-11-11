@@ -3,7 +3,6 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import SphereManager from './SphereManager';
 import HeightInput from './HeightInput';
-import Highbar from './Highbar'; // Импортируем Highbar
 
 const MapContainer = ({ mapStyle }) => {
   const mapContainerRef = useRef(null);
@@ -12,20 +11,22 @@ const MapContainer = ({ mapStyle }) => {
   const [sphereCoords, setSphereCoords] = useState(null);
   const [sphereHeight, setSphereHeight] = useState(100);
   const exaggeration = 3;
-  const [routeCoordinates, setRouteCoordinates] = useState([]); // для высотного отображения
 
+  // Состояния для камеры
   const cameraState = useRef({
-    center: [44.621762, 39.091278],
-    zoom: 20,
-    pitch: 60,
-    bearing: 41,
+    center: [44.621762, 39.091278], // Начальное местоположение
+    zoom: 20, // Начальный zoom
+    pitch: 60, // Начальный pitch
+    bearing: 41, // Начальный bearing
   });
 
+  // Состояния для отображения координат и высоты
   const [coordinates, setCoordinates] = useState({ lng: 0, lat: 0, height: 0 });
 
   useEffect(() => {
+    // Инициализация карты
     if (mapRef.current) {
-      mapRef.current.remove();
+      mapRef.current.remove();  // Удаляем старую карту перед созданием новой
     }
 
     mapboxgl.accessToken = 'pk.eyJ1IjoiYXJ0ZW1hdnIiLCJhIjoiY20yazhrOTlqMGJkNTJqcjF0MWZ2NWl0byJ9.TEG7Jvuty9-clulfpnEQUw';
@@ -40,6 +41,7 @@ const MapContainer = ({ mapStyle }) => {
     });
 
     mapRef.current.on('style.load', () => {
+      // Добавляем источник рельефа
       mapRef.current.addSource('mapbox-dem', {
         type: 'raster-dem',
         url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
@@ -47,14 +49,17 @@ const MapContainer = ({ mapStyle }) => {
         maxzoom: 14,
       });
 
+      // Настроим рельеф карты
       mapRef.current.setTerrain({
         source: 'mapbox-dem',
-        exaggeration: exaggeration,
+        exaggeration: exaggeration,  // Сильный рельеф
       });
 
+      // Передаем карту с рельефом в SphereManager
       SphereManager.reinitialize(mapRef.current);
     });
 
+    // Добавление управления картой
     mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     const onClick = (e) => {
@@ -64,6 +69,7 @@ const MapContainer = ({ mapStyle }) => {
 
     mapRef.current.on('click', onClick);
 
+    // Отслеживание перемещения мыши для отображения координат и высоты
     mapRef.current.on('mousemove', async (e) => {
       const lngLat = e.lngLat;
       const height = await mapRef.current.queryTerrainElevation([lngLat.lng, lngLat.lat]) / exaggeration;
@@ -74,6 +80,7 @@ const MapContainer = ({ mapStyle }) => {
       });
     });
 
+    // Сохранение состояния камеры при каждом изменении
     mapRef.current.on('moveend', () => {
       const center = mapRef.current.getCenter();
       const zoom = mapRef.current.getZoom();
@@ -97,10 +104,6 @@ const MapContainer = ({ mapStyle }) => {
   const addSphere = async () => {
     if (sphereCoords) {
       await SphereManager.addSphere(mapRef.current, sphereCoords, sphereHeight, exaggeration);
-
-      // Добавляем координаты новой сферы в маршрут
-      setRouteCoordinates(prev => [...prev, [...sphereCoords, sphereHeight]]);
-      
       setShowHeightInput(false);
       setSphereCoords(null);
       setSphereHeight(100);
@@ -108,7 +111,7 @@ const MapContainer = ({ mapStyle }) => {
   };
 
   return (
-    <div ref={mapContainerRef} style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <div ref={mapContainerRef} style={{ width: '100%', height: '100vh' }}>
       {showHeightInput && (
         <HeightInput 
           height={sphereHeight} 
@@ -117,7 +120,7 @@ const MapContainer = ({ mapStyle }) => {
         />
       )}
 
-      {/* Блок для отображения координат и высоты */}
+      {/* Добавляем блок для отображения координат и высоты */}
       <div style={{
         position: 'absolute', 
         top: '10px', 
@@ -131,18 +134,6 @@ const MapContainer = ({ mapStyle }) => {
         <div>Longitude: {coordinates.lng}</div>
         <div>Latitude: {coordinates.lat}</div>
         <div>Elevation: {coordinates.height} m</div>
-      </div>
-
-      {/* Highbar внизу карты */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        height: '25%',  // Задаем высоту Highbar
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        zIndex: 100,
-      }}>
-        <Highbar map={mapRef.current} routeCoordinates={routeCoordinates} />
       </div>
     </div>
   );
